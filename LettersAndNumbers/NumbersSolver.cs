@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace LettersAndNumbers
 {
-    class NumbersSolver
+    public class NumbersSolver
     {
         private const int NumChosenNumbers = 6;
         private bool _multiSolMode = true;
@@ -130,6 +130,8 @@ namespace LettersAndNumbers
                             FillNumbersInTree(tree, new List<int>(numsPermutation));
                             // place the current permutation of operators into the tree
                             FillOperatorsInTree(tree, new List<OperatorType>(opTypePermutation));
+
+                            PruneTree(tree);
                             
                             if (tree.Evaluate() == target)
                             {
@@ -162,6 +164,31 @@ namespace LettersAndNumbers
             {
                 Console.WriteLine("No solution after " + attempts.ToString("N0") + " attempts");
             }
+        }
+
+        private void PruneTree(ArithmeticExpTreeNode tree)
+        {
+            // prune:
+            // - multiply by 1
+            // - multiply by 0
+            // - divide by 1
+            // - add to 0
+            if (tree.Left.Left == null && tree.Left.Right == null)
+            {
+                
+            }
+        }
+
+        private bool TreesEquivalent(ArithmeticExpTreeNode tree1, ArithmeticExpTreeNode tree2)
+        {
+            // assumes both evaluate to the same result
+            // assumes both have the same group of numbers (can be different orders)
+            return false;
+        }
+
+        private long CalculateIntuitionScore(ArithmeticExpTreeNode tree)
+        {
+            return 0;
         }
 
         private static IEnumerable<IEnumerable<T>> GetPermutationsWithRepetition<T>(IEnumerable<T> list, int length)
