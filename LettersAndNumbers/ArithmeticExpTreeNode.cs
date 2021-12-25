@@ -15,8 +15,8 @@ namespace LettersAndNumbers
     {
         public OperatorType OpType { get; set; }
         private int Number { get; }
-        public ArithmeticExpTreeNode Left { get; set; }
-        public ArithmeticExpTreeNode Right { get; set; }
+        public ArithmeticExpTreeNode? Left { get; set; }
+        public ArithmeticExpTreeNode? Right { get; set; }
 
         public ArithmeticExpTreeNode(ArithmeticExpTreeNode copy)
         {
@@ -81,6 +81,53 @@ namespace LettersAndNumbers
                     return leftResult + rightResult;
                 default:
                     return leftResult - rightResult;
+            }
+        }
+
+        /// <summary>
+        /// Returns whether the this tree is mathematically equivalent to the given tree.
+        /// </summary>
+        /// <param name="other">other tree to check equivalence</param>
+        /// <returns>true if equivalent, false otherwise</returns>
+        public bool EquivalentTo(ArithmeticExpTreeNode other)
+        {
+            // if this is a leaf node and other is an internal node, return false
+            if (Left == null && Right == null && other.Left != null && other.Right != null)
+            {
+                return false;
+            }
+
+            // if this is an external node and other is a leaf node, return false
+            if (Left != null && Right != null && other.Left == null && other.Right == null)
+            {
+                return false;
+            }
+            
+            // if both are leaf nodes, return whether the two numbers are equal
+            if (Left == null && Right == null && other.Left == null && other.Right == null)
+            {
+                return Number == other.Number;
+            }
+            
+            // both are internal nodes
+            // if the operators are different, return false
+            if (OpType != other.OpType)
+            {
+                return false;
+            }
+
+            switch (OpType)
+            {
+                case OperatorType.Multiply:
+                case OperatorType.Add:
+                    // commutative operators
+                    return Left.EquivalentTo(other.Left) && Right.EquivalentTo(other.Right)
+                           || Left.EquivalentTo(other.Right) && Right.EquivalentTo(other.Left);
+                case OperatorType.Divide:
+                case OperatorType.Subtract:
+                default:
+                    // non-commutative operators
+                    return Left.EquivalentTo(other.Left) && Right.EquivalentTo(other.Right);
             }
         }
 

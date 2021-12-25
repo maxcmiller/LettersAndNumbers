@@ -102,7 +102,7 @@ namespace LettersAndNumbers
 
         private void Solve(int target, List<int> numbers)
         {
-            int solutionCount = 0;
+            List<ArithmeticExpTreeNode> solutions = new();
             ulong attempts = 0;
             
             // start with expressions involving only one operator, then increase up to the maximum number possible
@@ -142,8 +142,21 @@ namespace LettersAndNumbers
                                     return;
                                 }
 
-                                Console.WriteLine("Found solution: " + tree);
-                                solutionCount++;
+                                bool isEquivToSolution = false;
+                                foreach (var solution in solutions)
+                                {
+                                    if (solution.EquivalentTo(tree))
+                                    {
+                                        isEquivToSolution = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!isEquivToSolution)
+                                {
+                                    Console.WriteLine("Found solution: " + tree);
+                                    solutions.Add(tree);
+                                }
                             }
 
                             attempts++;
@@ -155,9 +168,9 @@ namespace LettersAndNumbers
             // TODO try to solve for target +/- 1 if no solution found
             // TODO detect and eliminate mathematically equivalent solutions
 
-            if (solutionCount > 0)
+            if (solutions.Count > 0)
             {
-                Console.WriteLine("Found " + solutionCount.ToString("N0") + " solutions in "
+                Console.WriteLine("Found " + solutions.Count.ToString("N0") + " solutions in "
                                   + attempts.ToString("N0") + " attempts");
             }
             else
@@ -177,13 +190,6 @@ namespace LettersAndNumbers
             {
                 
             }
-        }
-
-        private bool TreesEquivalent(ArithmeticExpTreeNode tree1, ArithmeticExpTreeNode tree2)
-        {
-            // assumes both evaluate to the same result
-            // assumes both have the same group of numbers (can be different orders)
-            return false;
         }
 
         private long CalculateIntuitionScore(ArithmeticExpTreeNode tree)

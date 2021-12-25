@@ -17,6 +17,46 @@ public class Tests
     {
         _solver = new NumbersSolver();
     }
+    
+    [Test, Order(1)]
+    public void TreesEquivalentTrueTest()
+    {
+        var tree1 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(1), new ArithmeticExpTreeNode(2));
+        tree1.OpType = OperatorType.Multiply;
+        
+        var tree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(2), new ArithmeticExpTreeNode(1));
+        tree1.OpType = OperatorType.Multiply;
+        
+        Assert.True(tree1.EquivalentTo(tree2));
+    }
+    
+    [Test, Order(1)]
+    public void TreesEquivalentFalseTest()
+    {
+        var tree1 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(1), new ArithmeticExpTreeNode(2));
+        tree1.OpType = OperatorType.Subtract;
+        
+        var tree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(2), new ArithmeticExpTreeNode(1));
+        tree1.OpType = OperatorType.Subtract;
+        
+        Assert.False(tree1.EquivalentTo(tree2));
+    }
+    
+    [Test, Order(1)]
+    public void TreesEquivalentSimpleTest()
+    {
+        var subtree1 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(100), new ArithmeticExpTreeNode(3));
+        subtree1.OpType = OperatorType.Subtract;
+        var tree1 = new ArithmeticExpTreeNode(subtree1, new ArithmeticExpTreeNode(6));
+        tree1.OpType = OperatorType.Multiply;
+        
+        var subtree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(100), new ArithmeticExpTreeNode(3));
+        subtree2.OpType = OperatorType.Subtract;
+        var tree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(6), subtree2);
+        tree2.OpType = OperatorType.Multiply;
+        
+        Assert.True(tree1.EquivalentTo(tree2));
+    }
 
     [Test]
     public void BasicTest()
@@ -52,50 +92,11 @@ public class Tests
         string input = GenerateInput(target, numbers, true);
         string expected = GenerateOutput(target, numbers)
                           + "Found solution: (((50 × 7) + 6) × (3 - 1))\r\n"
-                          + "Found solution: ((3 - 1) × ((50 × 7) + 6))\r\n"
-                          + "Found solution: ((3 - 1) × (6 + (50 × 7)))\r\n"
-                          + "Found solution: ((3 - 1) × (6 + (7 × 50)))\r\n"
-                          + "Found solution: ((3 - 1) × ((7 × 50) + 6))\r\n"
-                          + "Found solution: ((6 + (50 × 7)) × (3 - 1))\r\n"
-                          + "Found solution: ((6 + (7 × 50)) × (3 - 1))\r\n"
-                          + "Found solution: (((7 × 50) + 6) × (3 - 1))\r\n"
                           + "Found solution: ((((25 × (50 + 7)) - 1) × 3) ÷ 6)\r\n"
                           + "Found solution: (((25 × (50 + 7)) - 1) ÷ (6 ÷ 3))\r\n"
                           + "Found solution: ((25 × 3) + ((50 - 1) × (6 + 7)))\r\n"
-                          + "Found solution: ((25 × 3) + ((50 - 1) × (7 + 6)))\r\n"
                           + "Found solution: ((25 × 3) - ((1 - 50) × (6 + 7)))\r\n"
-                          + "Found solution: ((25 × 3) - ((1 - 50) × (7 + 6)))\r\n"
-                          + "Found solution: ((25 × 3) + ((6 + 7) × (50 - 1)))\r\n"
-                          + "Found solution: ((25 × 3) - ((6 + 7) × (1 - 50)))\r\n"
-                          + "Found solution: ((25 × 3) + ((7 + 6) × (50 - 1)))\r\n"
-                          + "Found solution: ((25 × 3) - ((7 + 6) × (1 - 50)))\r\n"
-                          + "Found solution: ((((25 × (7 + 50)) - 1) × 3) ÷ 6)\r\n"
-                          + "Found solution: (((25 × (7 + 50)) - 1) ÷ (6 ÷ 3))\r\n"
-                          + "Found solution: (((50 - 1) × (6 + 7)) + (25 × 3))\r\n"
-                          + "Found solution: (((50 - 1) × (6 + 7)) + (3 × 25))\r\n"
-                          + "Found solution: (((50 - 1) × (7 + 6)) + (25 × 3))\r\n"
-                          + "Found solution: (((50 - 1) × (7 + 6)) + (3 × 25))\r\n"
-                          + "Found solution: (((((50 + 7) × 25) - 1) × 3) ÷ 6)\r\n"
-                          + "Found solution: ((((50 + 7) × 25) - 1) ÷ (6 ÷ 3))\r\n"
-                          + "Found solution: ((3 × 25) + ((50 - 1) × (6 + 7)))\r\n"
-                          + "Found solution: ((3 × 25) + ((50 - 1) × (7 + 6)))\r\n"
-                          + "Found solution: ((3 × ((25 × (50 + 7)) - 1)) ÷ 6)\r\n"
-                          + "Found solution: ((3 × 25) - ((1 - 50) × (6 + 7)))\r\n"
-                          + "Found solution: ((3 × 25) - ((1 - 50) × (7 + 6)))\r\n"
-                          + "Found solution: ((3 × 25) + ((6 + 7) × (50 - 1)))\r\n"
-                          + "Found solution: ((3 × 25) - ((6 + 7) × (1 - 50)))\r\n"
-                          + "Found solution: ((3 × ((25 × (7 + 50)) - 1)) ÷ 6)\r\n"
-                          + "Found solution: ((3 × 25) + ((7 + 6) × (50 - 1)))\r\n"
-                          + "Found solution: ((3 × 25) - ((7 + 6) × (1 - 50)))\r\n"
-                          + "Found solution: ((3 × (((50 + 7) × 25) - 1)) ÷ 6)\r\n"
-                          + "Found solution: ((3 × (((7 + 50) × 25) - 1)) ÷ 6)\r\n"
-                          + "Found solution: (((6 + 7) × (50 - 1)) + (25 × 3))\r\n"
-                          + "Found solution: (((6 + 7) × (50 - 1)) + (3 × 25))\r\n"
-                          + "Found solution: (((((7 + 50) × 25) - 1) × 3) ÷ 6)\r\n"
-                          + "Found solution: ((((7 + 50) × 25) - 1) ÷ (6 ÷ 3))\r\n"
-                          + "Found solution: (((7 + 6) × (50 - 1)) + (25 × 3))\r\n"
-                          + "Found solution: (((7 + 6) × (50 - 1)) + (3 × 25))\r\n"
-                          + "Found 44 solutions in 33,802,560 attempts\r\n";
+                          + "Found 5 solutions in 33,802,560 attempts\r\n";
 
         AssertSolvesTo(input, expected);
     }
