@@ -17,6 +17,10 @@ namespace LettersAndNumbers
         private int Number { get; }
         public ArithmeticExpTreeNode? Left { get; set; }
         public ArithmeticExpTreeNode? Right { get; set; }
+        
+        // operator flags
+        private bool _subtrahend;
+        private bool _divisor;
 
         public ArithmeticExpTreeNode(ArithmeticExpTreeNode copy)
         {
@@ -24,6 +28,8 @@ namespace LettersAndNumbers
             Number = copy.Number;
             if (copy.Left != null) Left = new ArithmeticExpTreeNode(copy.Left);
             if (copy.Right != null) Right = new ArithmeticExpTreeNode(copy.Right);
+            _subtrahend = copy._subtrahend;
+            _divisor = copy._divisor;
         }
 
         public ArithmeticExpTreeNode(int number)
@@ -89,7 +95,38 @@ namespace LettersAndNumbers
         /// </summary>
         /// <param name="other">other tree to check equivalence</param>
         /// <returns>true if equivalent, false otherwise</returns>
-        public bool EquivalentTo(ArithmeticExpTreeNode other)
+        public bool IsEquivalentTo(ArithmeticExpTreeNode other)
+        {
+            // trees with the same structure must be equivalent
+            if (HasEquivalentStructureTo(other)) return true;
+            
+            /*
+             * Tree structures may not be equivalent, but represent the same expression.
+             * Fill the operator flags and check that both trees contain the same leaf nodes
+             * with the same operator flags.
+             */
+            
+            FillOperatorFlags();
+            other.FillOperatorFlags();
+
+            // only leaf nodes (containing individual numbers) should be checked for their operator flags
+            var onlyLeaves = (ArithmeticExpTreeNode n) => n.Left == null && n.Right == null;
+
+            var otherNodes = other.ToList().Where(onlyLeaves).ToList();
+            
+            foreach (var ourNode in ToList().Where(onlyLeaves))
+            {
+                if (!otherNodes.Remove(ourNode))
+                {
+                    // one of our nodes was not found in list of other nodes
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool HasEquivalentStructureTo(ArithmeticExpTreeNode other)
         {
             // if this is a leaf node and other is an internal node, return false
             if (Left == null && Right == null && other.Left != null && other.Right != null)
@@ -121,13 +158,13 @@ namespace LettersAndNumbers
                 case OperatorType.Multiply:
                 case OperatorType.Add:
                     // commutative operators
-                    return Left.EquivalentTo(other.Left) && Right.EquivalentTo(other.Right)
-                           || Left.EquivalentTo(other.Right) && Right.EquivalentTo(other.Left);
+                    return Left.HasEquivalentStructureTo(other.Left) && Right.HasEquivalentStructureTo(other.Right)
+                           || Left.HasEquivalentStructureTo(other.Right) && Right.HasEquivalentStructureTo(other.Left);
                 case OperatorType.Divide:
                 case OperatorType.Subtract:
                 default:
                     // non-commutative operators
-                    return Left.EquivalentTo(other.Left) && Right.EquivalentTo(other.Right);
+                    return Left.HasEquivalentStructureTo(other.Left) && Right.HasEquivalentStructureTo(other.Right);
             }
         }
 
@@ -149,6 +186,92 @@ namespace LettersAndNumbers
             builder.Append(Right);
             builder.Append(')');
             return builder.ToString();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null) return false;
+
+            ArithmeticExpTreeNode objAsNode = obj as ArithmeticExpTreeNode;
+
+            if (objAsNode == null) return false;
+
+            return Equals(objAsNode);
+        }
+
+        public bool Equals(ArithmeticExpTreeNode? other)
+        {
+            if (other == null) return false;
+
+            if (OpType != other.OpType) return false;
+
+            if (Number != other.Number) return false;
+
+            if (_divisor != other._divisor) return false;
+
+            if (_subtrahend != other._subtrahend) return false;
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return Tuple.Create(OpType, Number, _subtrahend, _divisor).GetHashCode();
+        }
+
+        public void FillOperatorFlags()
+        {
+            FillOperatorFlags(false, false); // root note has no operator flags, since no parent
+        }
+
+        private void FillOperatorFlags(bool isSubtrahend, bool isDivisor)
+        {
+            _subtrahend = isSubtrahend;
+            _divisor = isDivisor;
+            
+            if (Left == null && Right == null)
+            {
+                // leaf node (number node), no children to fill
+                return;
+            }
+
+            var rightSubtrahend = isSubtrahend;
+            var rightDivisor = isDivisor;
+            
+            switch (OpType)
+            {
+                case OperatorType.Multiply:
+                case OperatorType.Add:
+                    break;
+                case OperatorType.Subtract:
+                    rightSubtrahend = !isSubtrahend;
+                    break;
+                case OperatorType.Divide:
+                    rightDivisor = !isDivisor;
+                    break;
+            }
+            
+            Left.FillOperatorFlags(isSubtrahend, isDivisor);
+            Right.FillOperatorFlags(rightSubtrahend, rightDivisor);
+        }
+
+        /// <summary>
+        /// Returns a list containing all the nodes in the tree rooted at this node, in the order given by an
+        /// in-order traversal.
+        /// </summary>
+        /// <returns>List of all nodes in this tree</returns>
+        public IList<ArithmeticExpTreeNode> ToList()
+        {
+            var list = new List<ArithmeticExpTreeNode>();
+            return ToList(list);
+        }
+
+        private IList<ArithmeticExpTreeNode> ToList(IList<ArithmeticExpTreeNode> list)
+        {
+            Left?.ToList(list);
+            list.Add(this);
+            Right?.ToList(list);
+            return list;
         }
     }
 }

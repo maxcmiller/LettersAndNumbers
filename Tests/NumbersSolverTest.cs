@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using LettersAndNumbers;
 
@@ -16,46 +14,6 @@ public class Tests
     public void Setup()
     {
         _solver = new NumbersSolver();
-    }
-    
-    [Test, Order(1)]
-    public void TreesEquivalentTrueTest()
-    {
-        var tree1 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(1), new ArithmeticExpTreeNode(2));
-        tree1.OpType = OperatorType.Multiply;
-        
-        var tree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(2), new ArithmeticExpTreeNode(1));
-        tree1.OpType = OperatorType.Multiply;
-        
-        Assert.True(tree1.EquivalentTo(tree2));
-    }
-    
-    [Test, Order(1)]
-    public void TreesEquivalentFalseTest()
-    {
-        var tree1 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(1), new ArithmeticExpTreeNode(2));
-        tree1.OpType = OperatorType.Subtract;
-        
-        var tree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(2), new ArithmeticExpTreeNode(1));
-        tree1.OpType = OperatorType.Subtract;
-        
-        Assert.False(tree1.EquivalentTo(tree2));
-    }
-    
-    [Test, Order(1)]
-    public void TreesEquivalentSimpleTest()
-    {
-        var subtree1 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(100), new ArithmeticExpTreeNode(3));
-        subtree1.OpType = OperatorType.Subtract;
-        var tree1 = new ArithmeticExpTreeNode(subtree1, new ArithmeticExpTreeNode(6));
-        tree1.OpType = OperatorType.Multiply;
-        
-        var subtree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(100), new ArithmeticExpTreeNode(3));
-        subtree2.OpType = OperatorType.Subtract;
-        var tree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(6), subtree2);
-        tree2.OpType = OperatorType.Multiply;
-        
-        Assert.True(tree1.EquivalentTo(tree2));
     }
 
     [Test]
@@ -93,10 +51,9 @@ public class Tests
         string expected = GenerateOutput(target, numbers)
                           + "Found solution: (((50 × 7) + 6) × (3 - 1))\r\n"
                           + "Found solution: ((((25 × (50 + 7)) - 1) × 3) ÷ 6)\r\n"
-                          + "Found solution: (((25 × (50 + 7)) - 1) ÷ (6 ÷ 3))\r\n"
-                          + "Found solution: ((25 × 3) + ((50 - 1) × (6 + 7)))\r\n"
+                          // + "Found solution: (((25 × (50 + 7)) - 1) ÷ (6 ÷ 3))\r\n" // TODO should this be considered a distinct solution?
                           + "Found solution: ((25 × 3) - ((1 - 50) × (6 + 7)))\r\n"
-                          + "Found 5 solutions in 33,802,560 attempts\r\n";
+                          + "Found 3 solutions in 33,802,560 attempts\r\n";
 
         AssertSolvesTo(input, expected);
     }

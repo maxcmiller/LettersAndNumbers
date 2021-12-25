@@ -145,7 +145,7 @@ namespace LettersAndNumbers
                                 bool isEquivToSolution = false;
                                 foreach (var solution in solutions)
                                 {
-                                    if (solution.EquivalentTo(tree))
+                                    if (solution.IsEquivalentTo(tree))
                                     {
                                         isEquivToSolution = true;
                                         break;
