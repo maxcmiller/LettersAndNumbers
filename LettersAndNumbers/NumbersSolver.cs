@@ -6,36 +6,39 @@ namespace LettersAndNumbers
 {
     public class NumbersSolver
     {
+        public enum SolveMode
+        {
+            First, // stop searching after the first valid solution is found
+            All, // search until all valid solutions are found
+            MostIntuitive, // find all valid solutions, then only show the most intuitive one
+        }
+        
         private const int NumChosenNumbers = 6;
-        private bool _multiSolMode = true;
+        private SolveMode _mode;
 
         /// <summary>
         /// Prompts the user to enter the mode of operation (single or multiple solutions).
         /// </summary>
         /// <returns>True if multi-solution mode is selected, false otherwise.</returns>
-        private bool AskMode()
+        private SolveMode AskMode()
         {
-            bool multiSolMode;
             while (true)
             {
-                Console.Write("Try to find multiple solutions? (y/n): ");
-                string input = Console.ReadLine();
-                if ("y".Equals(input))
+                Console.Write("Solution mode: first/all/intuitive (f/a/i): ");
+                string? input = Console.ReadLine();
+                switch (input)
                 {
-                    multiSolMode = true;
-                    break;
+                    case "f":
+                        return SolveMode.First;
+                    case "a":
+                        return SolveMode.All;
+                    case "i":
+                        return SolveMode.MostIntuitive;
+                    default:
+                        Console.WriteLine("Invalid response. Must be \"y\" or \"n\".");
+                        break;
                 }
-
-                if ("n".Equals(input))
-                {
-                    multiSolMode = false;
-                    break;
-                }
-
-                Console.WriteLine("Invalid response. Must be \"y\" or \"n\".");
             }
-
-            return multiSolMode;
         }
         
         /// <summary>
@@ -135,7 +138,7 @@ namespace LettersAndNumbers
                             
                             if (tree.Evaluate() == target)
                             {
-                                if (!_multiSolMode)
+                                if (_mode == SolveMode.First)
                                 {
                                     Console.WriteLine("Solved after " + attempts.ToString("N0") + " attempts.");
                                     Console.WriteLine(tree.ToString());
@@ -154,8 +157,13 @@ namespace LettersAndNumbers
 
                                 if (!isEquivToSolution)
                                 {
-                                    Console.WriteLine("Found solution: " + tree);
                                     solutions.Add(tree);
+
+                                    var intuitionScoreText =_mode == SolveMode.MostIntuitive
+                                        ? $" [intuition score: {tree.CalculateIntuitionScore()}]"
+                                        : "";
+                                    
+                                    Console.WriteLine("Found solution: " + tree + intuitionScoreText);
                                 }
                             }
 
@@ -166,12 +174,20 @@ namespace LettersAndNumbers
             }
             // TODO prune to select least operations
             // TODO try to solve for target +/- 1 if no solution found
-            // TODO detect and eliminate mathematically equivalent solutions
+
+            if (_mode == SolveMode.MostIntuitive)
+            {
+                // rank solutions by their intuition score, then only output the first one
+                solutions.Sort((s1, s2) => s1.CalculateIntuitionScore() - s2.CalculateIntuitionScore());
+                Console.WriteLine("Most intuitive solution: " + solutions[0]);
+                return;
+            }
 
             if (solutions.Count > 0)
             {
-                Console.WriteLine("Found " + solutions.Count.ToString("N0") + " solutions in "
-                                  + attempts.ToString("N0") + " attempts");
+                Console.WriteLine("Found " + solutions.Count.ToString("N0")
+                                           + $" solution{(solutions.Count == 1 ? "" : "s")} in " 
+                                           + attempts.ToString("N0") + " attempts");
             }
             else
             {
@@ -190,11 +206,6 @@ namespace LettersAndNumbers
             {
                 
             }
-        }
-
-        private long CalculateIntuitionScore(ArithmeticExpTreeNode tree)
-        {
-            return 0;
         }
 
         private static IEnumerable<IEnumerable<T>> GetPermutationsWithRepetition<T>(IEnumerable<T> list, int length)
@@ -277,7 +288,7 @@ namespace LettersAndNumbers
             List<int> numbers = AskNumbers();
             Console.WriteLine("Numbers are " + string.Join(", ", numbers) + ".");
 
-            _multiSolMode = AskMode();
+            _mode = AskMode();
 
             Solve(target, numbers);
         }

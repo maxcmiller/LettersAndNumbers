@@ -47,7 +47,7 @@ public class Tests
     {
         int target = 712;
         int[] numbers = {25, 50, 3, 1, 6, 7};
-        string input = GenerateInput(target, numbers, true);
+        string input = GenerateInput(target, numbers, NumbersSolver.SolveMode.All);
         string expected = GenerateOutput(target, numbers)
                           + "Found solution: (((50 × 7) + 6) × (3 - 1))\r\n"
                           + "Found solution: ((((25 × (50 + 7)) - 1) × 3) ÷ 6)\r\n"
@@ -55,6 +55,59 @@ public class Tests
                           + "Found solution: ((25 × 3) - ((1 - 50) × (6 + 7)))\r\n"
                           + "Found 3 solutions in 33,802,560 attempts\r\n";
 
+        AssertSolvesTo(input, expected);
+    }
+    
+    [Test]
+    public void MultipleSolutionsOnlyOneFoundTest()
+    {
+        // from Countdown 2012-06-04
+        int target = 507;
+        int[] numbers = {25, 100, 6, 10, 4, 5};
+        string input = GenerateInput(target, numbers, NumbersSolver.SolveMode.All);
+        string expected = GenerateOutput(target, numbers)
+                          + "Found solution: (25 + (((100 × (6 × 4)) + 10) ÷ 5))\r\n"
+                          + "Found 1 solution in 33,802,560 attempts\r\n";
+
+        AssertSolvesTo(input, expected);
+    }
+
+    [Test]
+    public void MostIntuitiveTest()
+    {
+        int target = 719;
+        int[] numbers = {50, 100, 2, 7, 4, 3};
+        string input = GenerateInput(target, numbers, NumbersSolver.SolveMode.MostIntuitive);
+        string expected = GenerateOutput(target, numbers)
+                          + "Found solution: (((100 + 3) × 7) - 2) [intuition score: 120]\r\n"
+                          + "Found solution: (50 + (((100 - 4) × 7) - 3)) [intuition score: 160]\r\n"
+                          + "Found solution: (50 - ((7 × (4 - 100)) + 3)) [intuition score: 160]\r\n"
+                          + "Found solution: (((100 + 3) × 7) + (2 - 4)) [intuition score: 150]\r\n"
+                          + "Found solution: (((100 + 3) × 7) - (4 ÷ 2)) [intuition score: 180]\r\n"
+                          + "Found solution: ((((50 × 100) + (2 + 3)) ÷ 7) + 4) [intuition score: 200]\r\n"
+                          + "Found solution: (50 + (((100 - (2 + 3)) × 7) + 4)) [intuition score: 180]\r\n"
+                          + "Found solution: (((50 + (100 - 7)) × (2 + 3)) + 4) [intuition score: 180]\r\n"
+                          + "Found solution: (((50 + ((100 - 4) × 2)) × 3) - 7) [intuition score: 200]\r\n"
+                          + "Found solution: ((50 - (((2 - 100) + 3) × 7)) + 4) [intuition score: 190]\r\n"
+                          + "Found solution: (((50 - (2 × (4 - 100))) × 3) - 7) [intuition score: 210]\r\n"
+                          + "Found solution: ((((50 × 7) - 3) × 2) + (100 ÷ 4)) [intuition score: 220]\r\n"
+                          + "Found solution: (((((50 × 4) - 100) + 3) × 7) - 2) [intuition score: 200]\r\n"
+                          + "Found solution: ((((100 × 2) - 7) × 4) - (50 + 3)) [intuition score: 200]\r\n"
+                          + "Found solution: ((100 ÷ 4) - (2 × (3 - (50 × 7)))) [intuition score: 230]\r\n"
+                          + "Most intuitive solution: (((100 + 3) × 7) - 2)\r\n";
+
+        AssertSolvesTo(input, expected);
+    }
+
+    [Test]
+    public void NoExactSolutionsTest()
+    {
+        int target = 824;
+        int[] numbers = {3, 7, 6, 2, 1, 7};
+        string input = GenerateInput(target, numbers);
+        string expected = GenerateOutput(target, numbers)
+                          + "No solution after 33,802,560 attempts\r\n";
+        
         AssertSolvesTo(input, expected);
     }
 
@@ -74,11 +127,24 @@ public class Tests
         }
     }
 
-    private string GenerateInput(int target, int[] numbers, bool multipleSols = false)
+    private string GenerateInput(int target, int[] numbers, NumbersSolver.SolveMode solveMode = NumbersSolver.SolveMode.First)
     {
-        var elems = new List<int>(numbers);
-        elems.Insert(0, target);
-        return $"{string.Join("\n", elems)}\n{(multipleSols ? "y" : "n")}\n";
+        string solveModeResponse;
+        // TODO use smart enum
+        switch (solveMode)
+        {
+            case NumbersSolver.SolveMode.All:
+                solveModeResponse = "a";
+                break;
+            case NumbersSolver.SolveMode.First:
+                solveModeResponse = "f";
+                break;
+            case NumbersSolver.SolveMode.MostIntuitive:
+            default:
+                solveModeResponse = "i";
+                break;
+        }
+        return $"{target}\n{string.Join("\n", numbers)}\n{solveModeResponse}\n";
     }
 
     private string GenerateOutput(int target, int[] numbers)
@@ -92,6 +158,6 @@ public class Tests
                "Enter chosen number #5: " +
                "Enter chosen number #6: " +
                $"Numbers are {String.Join(", ", numbers)}.\r\n" +
-               "Try to find multiple solutions? (y/n): ";
+               "Solution mode: first/all/intuitive (f/a/i): ";
     }
 }

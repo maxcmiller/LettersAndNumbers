@@ -58,6 +58,39 @@ namespace LettersAndNumbers
             }
         }
 
+        /// <summary>
+        /// Returns a metric representing how intuitive this expression tree is to humans.
+        /// </summary>
+        /// The intuition score is a positive integer. A higher intuition score means a less intuitive expression.
+        /// <returns>intuition score of this expression tree</returns>
+        public int CalculateIntuitionScore()
+        {
+            if (Left == null && Right == null)
+            {
+                return 10;
+            }
+
+            int operatorIntuitionScore;
+            switch (OpType)
+            {
+                case OperatorType.Add:
+                    operatorIntuitionScore = 20;
+                    break;
+                case OperatorType.Multiply:
+                    operatorIntuitionScore = 30;
+                    break;
+                case OperatorType.Subtract:
+                    operatorIntuitionScore = 30;
+                    break;
+                case OperatorType.Divide:
+                default:
+                    operatorIntuitionScore = 50;
+                    break;
+            }
+
+            return operatorIntuitionScore + Left.CalculateIntuitionScore() + Right.CalculateIntuitionScore();
+        }
+
         public int Evaluate()
         {
             if (Left == null && Right == null)
