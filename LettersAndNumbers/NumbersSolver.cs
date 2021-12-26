@@ -1,16 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Ardalis.SmartEnum;
 
 namespace LettersAndNumbers
 {
     public class NumbersSolver
     {
-        public enum SolveMode
+        public class SolveMode : SmartEnum<SolveMode>
         {
-            First, // stop searching after the first valid solution is found
-            All, // search until all valid solutions are found
-            MostIntuitive, // find all valid solutions, then only show the most intuitive one
+            /// <summary>
+            /// Stop searching after the first valid solution is found
+            /// </summary>
+            public static readonly SolveMode First = new(nameof(First), 1, "f");
+            
+            /// <summary>
+            /// Search until all valid solutions are found
+            /// </summary>
+            public static readonly SolveMode All = new(nameof(All), 2, "a");
+            
+            /// <summary>
+            /// Find all valid solutions, then only show the most intuitive one
+            /// </summary>
+            public static readonly SolveMode MostIntuitive = new(nameof(MostIntuitive), 3, "i");
+
+            public String ResponseCode { get; }
+
+            private SolveMode(string name, int value, string responseCode) : base(name, value)
+            {
+                ResponseCode = responseCode;
+            }
+
+            public static SolveMode? FromResponseCode(string responseCode)
+            {
+                try
+                {
+                    return List.First(m => m.ResponseCode.Equals(responseCode));
+                }
+                catch (InvalidOperationException)
+                {
+                    return null;
+                }
+            }
         }
         
         private const int NumChosenNumbers = 6;
@@ -26,18 +57,14 @@ namespace LettersAndNumbers
             {
                 Console.Write("Solution mode: first/all/intuitive (f/a/i): ");
                 string? input = Console.ReadLine();
-                switch (input)
+                var solveMode = SolveMode.FromResponseCode(input);
+                
+                if (solveMode != null)
                 {
-                    case "f":
-                        return SolveMode.First;
-                    case "a":
-                        return SolveMode.All;
-                    case "i":
-                        return SolveMode.MostIntuitive;
-                    default:
-                        Console.WriteLine("Invalid response. Must be \"y\" or \"n\".");
-                        break;
+                    return solveMode;
                 }
+
+                Console.WriteLine("Invalid response. Must be \"y\" or \"n\".");
             }
         }
         
@@ -119,7 +146,7 @@ namespace LettersAndNumbers
                     // loop through all permutations of arithmetic operators, with repetition of the same
                     // operator allowed
                     foreach (var opTypePermutation in GetPermutationsWithRepetition(
-                        Enum.GetValues(typeof(OperatorType)).Cast<OperatorType>(), size))
+                        OperatorType.List, size))
                     {
                         var trees = new List<ArithmeticExpTreeNode>();
                         // copy each tree to ensure each expression tree is a separate object

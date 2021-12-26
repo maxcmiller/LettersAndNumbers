@@ -23,7 +23,7 @@ public class Tests
         int[] numbers = {10, 5, 1, 2, 3, 4};
         string input = GenerateInput(target, numbers);
         string expected = GenerateOutput(target, numbers)
-                          + "Solved after 270,685 attempts.\r\n"
+                          + "Solved after 273,009 attempts.\r\n"
                           + "(10 × (5 × ((1 + 4) × 2)))\r\n";
 
         AssertSolvesTo(input, expected);
@@ -36,7 +36,7 @@ public class Tests
         int[] numbers = {50, 100, 3, 1, 1, 8};
         string input = GenerateInput(target, numbers);
         string expected = GenerateOutput(target, numbers)
-                          + "Solved after 2,860,135 attempts.\r\n"
+                          + "Solved after 2,842,327 attempts.\r\n"
                           + "(((50 + 100) × (3 + 1)) + (1 - 8))\r\n";
         
         AssertSolvesTo(input, expected);
@@ -84,8 +84,8 @@ public class Tests
                           + "Found solution: (50 - ((7 × (4 - 100)) + 3)) [intuition score: 160]\r\n"
                           + "Found solution: (((100 + 3) × 7) + (2 - 4)) [intuition score: 150]\r\n"
                           + "Found solution: (((100 + 3) × 7) - (4 ÷ 2)) [intuition score: 180]\r\n"
-                          + "Found solution: ((((50 × 100) + (2 + 3)) ÷ 7) + 4) [intuition score: 200]\r\n"
                           + "Found solution: (50 + (((100 - (2 + 3)) × 7) + 4)) [intuition score: 180]\r\n"
+                          + "Found solution: (((((50 × 100) + 2) + 3) ÷ 7) + 4) [intuition score: 200]\r\n"
                           + "Found solution: (((50 + (100 - 7)) × (2 + 3)) + 4) [intuition score: 180]\r\n"
                           + "Found solution: (((50 + ((100 - 4) × 2)) × 3) - 7) [intuition score: 200]\r\n"
                           + "Found solution: ((50 - (((2 - 100) + 3) × 7)) + 4) [intuition score: 190]\r\n"
@@ -127,24 +127,14 @@ public class Tests
         }
     }
 
-    private string GenerateInput(int target, int[] numbers, NumbersSolver.SolveMode solveMode = NumbersSolver.SolveMode.First)
+    private string GenerateInput(int target, int[] numbers, NumbersSolver.SolveMode? solveMode = null)
     {
-        string solveModeResponse;
-        // TODO use smart enum
-        switch (solveMode)
+        if (solveMode == null)
         {
-            case NumbersSolver.SolveMode.All:
-                solveModeResponse = "a";
-                break;
-            case NumbersSolver.SolveMode.First:
-                solveModeResponse = "f";
-                break;
-            case NumbersSolver.SolveMode.MostIntuitive:
-            default:
-                solveModeResponse = "i";
-                break;
+            solveMode = NumbersSolver.SolveMode.First;
         }
-        return $"{target}\n{string.Join("\n", numbers)}\n{solveModeResponse}\n";
+        
+        return $"{target}\n{string.Join("\n", numbers)}\n{solveMode.ResponseCode}\n";
     }
 
     private string GenerateOutput(int target, int[] numbers)

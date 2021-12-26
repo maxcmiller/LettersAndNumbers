@@ -1,14 +1,22 @@
 ﻿using System;
 using System.Text;
+using Ardalis.SmartEnum;
 
 namespace LettersAndNumbers
 {
-    public enum OperatorType
+    public class OperatorType : SmartEnum<OperatorType>
     {
-        Multiply,
-        Divide,
-        Add,
-        Subtract
+        public static readonly OperatorType Multiply = new(nameof(Multiply), 1, "×");
+        public static readonly OperatorType Divide = new(nameof(Divide), 2, "÷");
+        public static readonly OperatorType Add = new(nameof(Add), 3, "+");
+        public static readonly OperatorType Subtract = new(nameof(Subtract), 4, "-");
+        
+        public string Symbol { get; }
+
+        private OperatorType(string name, int value, string symbol) : base(name, value)
+        {
+            Symbol = symbol;
+        }
     }
     
     public class ArithmeticExpTreeNode
@@ -34,28 +42,15 @@ namespace LettersAndNumbers
 
         public ArithmeticExpTreeNode(int number)
         {
+            OpType = OperatorType.Multiply;
             Number = number;
         }
 
         public ArithmeticExpTreeNode(ArithmeticExpTreeNode left, ArithmeticExpTreeNode right)
         {
+            OpType = OperatorType.Multiply;
             Left = left;
             Right = right;
-        }
-
-        private string OperatorTypeString(OperatorType operatorType)
-        {
-            switch (operatorType)
-            {
-                case OperatorType.Multiply:
-                    return "×";
-                case OperatorType.Divide:
-                    return "÷";
-                case OperatorType.Add:
-                    return "+";
-                default:
-                    return "-";
-            }
         }
 
         /// <summary>
@@ -71,18 +66,18 @@ namespace LettersAndNumbers
             }
 
             int operatorIntuitionScore;
-            switch (OpType)
+            switch (OpType.Name)
             {
-                case OperatorType.Add:
+                case nameof(OperatorType.Add):
                     operatorIntuitionScore = 20;
                     break;
-                case OperatorType.Multiply:
+                case nameof(OperatorType.Multiply):
                     operatorIntuitionScore = 30;
                     break;
-                case OperatorType.Subtract:
+                case nameof(OperatorType.Subtract):
                     operatorIntuitionScore = 30;
                     break;
-                case OperatorType.Divide:
+                case nameof(OperatorType.Divide):
                 default:
                     operatorIntuitionScore = 50;
                     break;
@@ -102,11 +97,11 @@ namespace LettersAndNumbers
             // internal node, evaluate the subtrees and apply this node's operator
             int leftResult = Left.Evaluate();
             int rightResult = Right.Evaluate();
-            switch (OpType)
+            switch (OpType.Name)
             {
-                case OperatorType.Multiply:
+                case nameof(OperatorType.Multiply):
                     return leftResult * rightResult;
-                case OperatorType.Divide:
+                case nameof(OperatorType.Divide):
                     try
                     {
                         if (leftResult % rightResult != 0) return 0; // only integer division is allowed
@@ -116,7 +111,7 @@ namespace LettersAndNumbers
                     {
                         return 0;
                     }
-                case OperatorType.Add:
+                case nameof(OperatorType.Add):
                     return leftResult + rightResult;
                 default:
                     return leftResult - rightResult;
@@ -186,15 +181,15 @@ namespace LettersAndNumbers
                 return false;
             }
 
-            switch (OpType)
+            switch (OpType.Name)
             {
-                case OperatorType.Multiply:
-                case OperatorType.Add:
+                case nameof(OperatorType.Multiply):
+                case nameof(OperatorType.Add):
                     // commutative operators
                     return Left.HasEquivalentStructureTo(other.Left) && Right.HasEquivalentStructureTo(other.Right)
                            || Left.HasEquivalentStructureTo(other.Right) && Right.HasEquivalentStructureTo(other.Left);
-                case OperatorType.Divide:
-                case OperatorType.Subtract:
+                case nameof(OperatorType.Divide):
+                case nameof(OperatorType.Subtract):
                 default:
                     // non-commutative operators
                     return Left.HasEquivalentStructureTo(other.Left) && Right.HasEquivalentStructureTo(other.Right);
@@ -214,7 +209,7 @@ namespace LettersAndNumbers
             builder.Append('(');
             builder.Append(Left);
             builder.Append(' ');
-            builder.Append(OperatorTypeString(OpType));
+            builder.Append(OpType.Symbol);
             builder.Append(' ');
             builder.Append(Right);
             builder.Append(')');
@@ -271,15 +266,15 @@ namespace LettersAndNumbers
             var rightSubtrahend = isSubtrahend;
             var rightDivisor = isDivisor;
             
-            switch (OpType)
+            switch (OpType.Name)
             {
-                case OperatorType.Multiply:
-                case OperatorType.Add:
+                case nameof(OperatorType.Multiply):
+                case nameof(OperatorType.Add):
                     break;
-                case OperatorType.Subtract:
+                case nameof(OperatorType.Subtract):
                     rightSubtrahend = !isSubtrahend;
                     break;
-                case OperatorType.Divide:
+                case nameof(OperatorType.Divide):
                     rightDivisor = !isDivisor;
                     break;
             }

@@ -45,7 +45,7 @@ public class ArithmeticExpTreeNodeTest
         tree1.OpType = OperatorType.Multiply;
         
         var tree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(2), new ArithmeticExpTreeNode(1));
-        tree1.OpType = OperatorType.Multiply;
+        tree2.OpType = OperatorType.Multiply;
         
         Assert.True(tree1.IsEquivalentTo(tree2));
     }
@@ -57,7 +57,7 @@ public class ArithmeticExpTreeNodeTest
         tree1.OpType = OperatorType.Subtract;
         
         var tree2 = new ArithmeticExpTreeNode(new ArithmeticExpTreeNode(2), new ArithmeticExpTreeNode(1));
-        tree1.OpType = OperatorType.Subtract;
+        tree2.OpType = OperatorType.Subtract;
         
         Assert.False(tree1.IsEquivalentTo(tree2));
     }
