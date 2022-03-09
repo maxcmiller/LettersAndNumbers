@@ -157,9 +157,9 @@ namespace LettersAndNumbers
                         foreach (var tree in trees)
                         {
                             // place the current permutation of numbers into the tree
-                            FillNumbersInTree(tree, new List<int>(numsPermutation));
+                            FillNumbersInTree(tree, new Stack<int>(numsPermutation));
                             // place the current permutation of operators into the tree
-                            FillOperatorsInTree(tree, new List<OperatorType>(opTypePermutation));
+                            FillOperatorsInTree(tree, new Stack<OperatorType>(opTypePermutation));
 
                             PruneTree(tree);
                             
@@ -270,12 +270,11 @@ namespace LettersAndNumbers
                 select new ArithmeticExpTreeNode(left, right);
         }
 
-        private void FillNumbersInTree(ArithmeticExpTreeNode root, IList<int> numbers)
+        private void FillNumbersInTree(ArithmeticExpTreeNode root, Stack<int> numbers)
         {
             if (root.Left == null)
             {
-                root.Left = new ArithmeticExpTreeNode(numbers[0]);
-                numbers.RemoveAt(0);
+                root.Left = new ArithmeticExpTreeNode(numbers.Pop());
             }
             else
             {
@@ -284,8 +283,7 @@ namespace LettersAndNumbers
 
             if (root.Right == null)
             {
-                root.Right = new ArithmeticExpTreeNode(numbers[0]);
-                numbers.RemoveAt(0);
+                root.Right = new ArithmeticExpTreeNode(numbers.Pop());
             }
             else
             {
@@ -293,15 +291,14 @@ namespace LettersAndNumbers
             }
         }
 
-        private void FillOperatorsInTree(ArithmeticExpTreeNode root, IList<OperatorType> opTypes)
+        private void FillOperatorsInTree(ArithmeticExpTreeNode root, Stack<OperatorType> opTypes)
         {
             if (root.Left == null && root.Right == null)
             {
                 return; // leaf (number) node, does not have an operator
             }
 
-            root.OpType = opTypes[0];
-            opTypes.RemoveAt(0);
+            root.OpType = opTypes.Pop();
 
             FillOperatorsInTree(root.Left, opTypes);
             FillOperatorsInTree(root.Right, opTypes);
