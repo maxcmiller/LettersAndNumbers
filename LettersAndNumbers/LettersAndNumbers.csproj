@@ -9,6 +9,11 @@
 
     <ItemGroup>
       <PackageReference Include="Ardalis.SmartEnum" Version="2.0.1" />
+      <PackageReference Include="JetBrains.dotMemory.Console.macos-x64" Version="2022.1.0-eap05" />
+      <PackageReference Include="JetBrains.dotTrace.CommandLineTools.macos-x64" Version="2022.1.0-eap05">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
     </ItemGroup>
 
 </Project>

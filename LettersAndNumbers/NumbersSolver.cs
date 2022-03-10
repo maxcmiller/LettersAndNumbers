@@ -138,23 +138,24 @@ namespace LettersAndNumbers
             // start with expressions involving only one operator, then increase up to the maximum number possible
             for (int size = 1; size < NumChosenNumbers; size++)
             {
-                // loop through all permutations of the numbers entered by the user
-                // each permutation represents a different arrangement of these numbers in the expression
-                foreach (var numsPermutation in GetPermutations(Enumerable.Range(0, numbers.Count),
-                        numbers.Count).Select(t => t.Select(i => numbers[i])))
+                var trees = new List<ArithmeticExpTreeNode>();
+                // copy each tree to ensure each expression tree is a separate object
+                foreach (var tree in AllArithmeticExpTrees(size))
                 {
-                    // loop through all permutations of arithmetic operators, with repetition of the same
-                    // operator allowed
-                    foreach (var opTypePermutation in GetPermutationsWithRepetition(
-                        OperatorType.List, size))
+                    trees.Add(new ArithmeticExpTreeNode(tree));
+                }
+
+                foreach (var tree in trees)
+                {
+                    // loop through all permutations of the numbers entered by the user
+                    // each permutation represents a different arrangement of these numbers in the expression
+                    foreach (var numsPermutation in GetPermutations(Enumerable.Range(0, numbers.Count),
+                                 numbers.Count).Select(t => t.Select(i => numbers[i])))
                     {
-                        var trees = new List<ArithmeticExpTreeNode>();
-                        // copy each tree to ensure each expression tree is a separate object
-                        foreach (var tree in AllArithmeticExpTrees(size))
-                        {
-                            trees.Add(new ArithmeticExpTreeNode(tree));
-                        }
-                        foreach (var tree in trees)
+                        // loop through all permutations of arithmetic operators, with repetition of the same
+                        // operator allowed
+                        foreach (var opTypePermutation in GetPermutationsWithRepetition(
+                                     OperatorType.List, size))
                         {
                             // place the current permutation of numbers into the tree
                             FillNumbersInTree(tree, new Stack<int>(numsPermutation));
@@ -162,7 +163,7 @@ namespace LettersAndNumbers
                             FillOperatorsInTree(tree, new Stack<OperatorType>(opTypePermutation));
 
                             PruneTree(tree);
-                            
+
                             if (tree.Evaluate() == target)
                             {
                                 if (_mode == SolveMode.First)
@@ -186,15 +187,17 @@ namespace LettersAndNumbers
                                 {
                                     solutions.Add(tree);
 
-                                    var intuitionScoreText =_mode == SolveMode.MostIntuitive
+                                    var intuitionScoreText = _mode == SolveMode.MostIntuitive
                                         ? $" [intuition score: {tree.CalculateIntuitionScore()}]"
                                         : "";
-                                    
+
                                     Console.WriteLine("Found solution: " + tree + intuitionScoreText);
                                 }
                             }
 
                             attempts++;
+
+                            ClearTree(tree);
                         }
                     }
                 }
@@ -219,6 +222,33 @@ namespace LettersAndNumbers
             else
             {
                 Console.WriteLine("No solution after " + attempts.ToString("N0") + " attempts");
+            }
+        }
+
+        private void ClearTree(ArithmeticExpTreeNode tree)
+        {
+            if (tree.Left != null)
+            {
+                if (tree.Left.Left == null && tree.Left.Right == null)
+                {
+                    tree.Left = null;
+                }
+                else
+                {
+                    ClearTree(tree.Left);
+                }
+            }
+
+            if (tree.Right != null)
+            {
+                if (tree.Right.Left == null && tree.Right.Right == null)
+                {
+                    tree.Right = null;
+                }
+                else
+                {
+                    ClearTree(tree.Right);
+                }
             }
         }
 

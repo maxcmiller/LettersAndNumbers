@@ -102,15 +102,9 @@ namespace LettersAndNumbers
                 case nameof(OperatorType.Multiply):
                     return leftResult * rightResult;
                 case nameof(OperatorType.Divide):
-                    try
-                    {
-                        if (leftResult % rightResult != 0) return 0; // only integer division is allowed
-                        return leftResult / rightResult;
-                    }
-                    catch (DivideByZeroException)
-                    {
-                        return 0;
-                    }
+                    if (rightResult == 0) return 0; // avoid dividing by zero
+                    if (leftResult % rightResult != 0) return 0; // only integer division is allowed
+                    return leftResult / rightResult;
                 case nameof(OperatorType.Add):
                     return leftResult + rightResult;
                 default:
