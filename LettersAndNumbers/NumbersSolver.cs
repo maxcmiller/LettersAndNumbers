@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Ardalis.SmartEnum;
+﻿using Ardalis.SmartEnum;
 
 namespace LettersAndNumbers
 {
@@ -134,10 +131,15 @@ namespace LettersAndNumbers
         {
             List<ArithmeticExpTreeNode> solutions = new();
             ulong attempts = 0;
-            
+
+            var numsPermutations = GetPermutations(Enumerable.Range(0, numbers.Count),
+                numbers.Count).Select(t => t.Select(i => numbers[i]));
+
             // start with expressions involving only one operator, then increase up to the maximum number possible
             for (int size = 1; size < NumChosenNumbers; size++)
             {
+                var opsPermutations = GetPermutationsWithRepetition(OperatorType.List, size);
+                
                 var trees = new List<ArithmeticExpTreeNode>();
                 // copy each tree to ensure each expression tree is a separate object
                 foreach (var tree in AllArithmeticExpTrees(size))
@@ -149,18 +151,16 @@ namespace LettersAndNumbers
                 {
                     // loop through all permutations of the numbers entered by the user
                     // each permutation represents a different arrangement of these numbers in the expression
-                    foreach (var numsPermutation in GetPermutations(Enumerable.Range(0, numbers.Count),
-                                 numbers.Count).Select(t => t.Select(i => numbers[i])))
+                    foreach (var numsPermutation in numsPermutations)
                     {
                         // loop through all permutations of arithmetic operators, with repetition of the same
                         // operator allowed
-                        foreach (var opTypePermutation in GetPermutationsWithRepetition(
-                                     OperatorType.List, size))
+                        foreach (var opTypePermutation in opsPermutations)
                         {
                             // place the current permutation of numbers into the tree
-                            FillNumbersInTree(tree, new Stack<int>(numsPermutation));
+                            FillNumbersInTree(tree, numsPermutation);
                             // place the current permutation of operators into the tree
-                            FillOperatorsInTree(tree, new Stack<OperatorType>(opTypePermutation));
+                            FillOperatorsInTree(tree, opTypePermutation);
 
                             PruneTree(tree);
 
@@ -185,13 +185,14 @@ namespace LettersAndNumbers
 
                                 if (!isEquivToSolution)
                                 {
-                                    solutions.Add(tree);
+                                    ArithmeticExpTreeNode treeCopy = new ArithmeticExpTreeNode(tree);
+                                    solutions.Add(treeCopy);
 
                                     var intuitionScoreText = _mode == SolveMode.MostIntuitive
-                                        ? $" [intuition score: {tree.CalculateIntuitionScore()}]"
+                                        ? $" [intuition score: {treeCopy.CalculateIntuitionScore()}]"
                                         : "";
 
-                                    Console.WriteLine("Found solution: " + tree + intuitionScoreText);
+                                    Console.WriteLine("Found solution: " + treeCopy + intuitionScoreText);
                                 }
                             }
 
@@ -300,38 +301,53 @@ namespace LettersAndNumbers
                 select new ArithmeticExpTreeNode(left, right);
         }
 
-        private void FillNumbersInTree(ArithmeticExpTreeNode root, Stack<int> numbers)
+        private void FillNumbersInTree(ArithmeticExpTreeNode root, IEnumerable<int> numbers)
+        {
+            var enumerator = numbers.GetEnumerator();
+            FillNumbersInTree(root, enumerator);
+        }
+
+        private void FillNumbersInTree(ArithmeticExpTreeNode root, IEnumerator<int> numbersEnumerator)
         {
             if (root.Left == null)
             {
-                root.Left = new ArithmeticExpTreeNode(numbers.Pop());
+                numbersEnumerator.MoveNext();
+                root.Left = new ArithmeticExpTreeNode(numbersEnumerator.Current);
             }
             else
             {
-                FillNumbersInTree(root.Left, numbers);
+                FillNumbersInTree(root.Left, numbersEnumerator);
             }
-
+            
             if (root.Right == null)
             {
-                root.Right = new ArithmeticExpTreeNode(numbers.Pop());
+                numbersEnumerator.MoveNext();
+                root.Right = new ArithmeticExpTreeNode(numbersEnumerator.Current);
             }
             else
             {
-                FillNumbersInTree(root.Right, numbers);
+                FillNumbersInTree(root.Right, numbersEnumerator);
             }
         }
 
-        private void FillOperatorsInTree(ArithmeticExpTreeNode root, Stack<OperatorType> opTypes)
+        private void FillOperatorsInTree(ArithmeticExpTreeNode root, IEnumerable<OperatorType> opTypes)
+        {
+            var enumerator = opTypes.GetEnumerator();
+            FillOperatorsInTree(root, enumerator);
+        }
+
+        private void FillOperatorsInTree(ArithmeticExpTreeNode root, IEnumerator<OperatorType> opTypesEnumerator)
         {
             if (root.Left == null && root.Right == null)
             {
                 return; // leaf (number) node, does not have an operator
             }
 
-            root.OpType = opTypes.Pop();
+            opTypesEnumerator.MoveNext();
+            root.OpType = opTypesEnumerator.Current;
 
-            FillOperatorsInTree(root.Left, opTypes);
-            FillOperatorsInTree(root.Right, opTypes);
+            FillOperatorsInTree(root.Left, opTypesEnumerator);
+            FillOperatorsInTree(root.Right, opTypesEnumerator);
         }
 
         public void Run()
